@@ -51,20 +51,35 @@ def score(w,t):
             right=right+1
     print(round(right/len(predict_y),2))
 
-para_w=mat(np.array([1.0,1.0,-1.0,-1.0]))
-print(para_w)
-para_t=0
-learning_rate=0.1
-maxepochs=300
-epoch=0
-while epoch<maxepochs :
-    j=0
-    for x,y in zip(trainX,trainy):
-        temp_w=para_w
-        while j<dimension:
-            para_w[0,j]=para_w[0,j]-learning_rate*(model_func(x,para_w,para_t)-y)*x[j]
-            j=j+1
-        para_t=para_t+learning_rate*(model_func(x,temp_w,para_t)-y)
-    epoch=epoch+1
+# para_w=mat(np.array([1.0,1.0,-1.0,-1.0]))
+# print(para_w)
+# para_t=0
+# learning_rate=0.1
+# maxepochs=300
+# epoch=0
 
-score(para_w,para_t)
+def gd_logistic_regression(trainX,trainy,dimension=trainX.shape[1],maxepochs=200,
+                           learning_rate=0.1,para_t=1,para_w=mat(np.random.randn(1,dimension))):
+    epoch=0
+    while epoch<maxepochs:
+        j=0
+        for x,y in zip(trainX,trainy):
+            temp_w=para_w
+            while j<dimension:
+                para_w[0,j]=para_w[0,j]-learning_rate*(model_func(x,para_w,para_t)-y)*x[j]
+                j=j+1
+            para_t=para_t+learning_rate*(model_func(x,temp_w,para_t)-y)
+        epoch=epoch+1
+    return para_w,para_t
+
+# while epoch<maxepochs :
+#     j=0
+#     for x,y in zip(trainX,trainy):
+#         temp_w=para_w
+#         while j<dimension:
+#             para_w[0,j]=para_w[0,j]-learning_rate*(model_func(x,para_w,para_t)-y)*x[j]
+#             j=j+1
+#         para_t=para_t+learning_rate*(model_func(x,temp_w,para_t)-y)
+#     epoch=epoch+1
+# para_w,para_t=gd_logistic_regression(trainX,trainy,maxepochs=300,learning_rate=0.2)
+# score(para_w,para_t)
