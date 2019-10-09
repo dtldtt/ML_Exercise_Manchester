@@ -25,16 +25,18 @@ iris_y=iris.target
 dataX,datay=make_classification(n_samples=500,n_features=4,n_redundant=0,n_informative=2,
                              random_state=1,n_clusters_per_class=2)
 
-trainX=dataX[:400]
-trainy=datay[:400]
-testX=dataX[400:]
-testy=datay[400:]
-dimension=4
+#trainX=dataX[:400]
+#trainy=datay[:400]
+#testX=dataX[400:]
+#testy=datay[400:]
+trainX=dataX
+trainy=datay
+
 
 def model_func(x,w,t):
     return 1.0/(1+math.exp(-(x*w.T-t).mean()))
 
-def predict(w,t):
+def predict(w,t,testX,testy):
     predict_y=[]
     for each_x in testX:
         predict_y.append(round(model_func(each_x,w,t)))
@@ -43,13 +45,15 @@ def predict(w,t):
     return predict_y
 
 
-def score(w,t):
-    predict_y=predict(w,t)
+def score(w,t,testX,testy):
+    predict_y=predict(w,t,testX,testX)
     right=0
     for i in range(len(predict_y)):
         if predict_y[i]==testy[i]:
             right=right+1
-    print(round(right/len(predict_y),2))
+    result=round(right/len(predict_y),2)
+    #print(result)
+    return result
 
 # para_w=mat(np.array([1.0,1.0,-1.0,-1.0]))
 # print(para_w)
@@ -59,7 +63,9 @@ def score(w,t):
 # epoch=0
 
 def gd_logistic_regression(trainX,trainy,dimension=trainX.shape[1],maxepochs=200,
-                           learning_rate=0.1,para_t=1,para_w=mat(np.random.randn(1,dimension))):
+                           learning_rate=0.1,para_t=1,para_w=None):
+    if para_w is None:
+        para_w=mat(np.random.randn(1,dimension))                       
     epoch=0
     while epoch<maxepochs:
         j=0
