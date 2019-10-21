@@ -4,13 +4,14 @@ from decision_stump import decision_stump
 from sklearn import metrics
 from tree import Tree
 import warnings
+import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 
 
 cancer=datasets.load_breast_cancer()
 dataX=cancer.data
 datay=cancer.target
-example_num=[5,100,200,300,400,500]
+example_num=[50,200,300]
 train_scores=[]
 test_scores=[]
 
@@ -28,16 +29,26 @@ def build_tree(trainX,trainy,tree=Tree(),depth=10):
     i=0
     feature_score=0
     best_feature=0
+    
     while i<(trainX.shape[1]):
+        train_feature=np.array([],dtype='int32')
         # try split the first feature
         #decision_stump(trainX.T[i],trainy)
-        current_feature=metrics.adjusted_mutual_info_score(trainX.T[i],trainy)
+        feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.1)
+        # print(feature_stump)
+        for eachX in trainX.T[i]:
+            if eachX<feature_stump:
+                train_feature=np.append(train_feature,0)
+            else:
+                train_feature=np.append(train_feature,1)
+        #print(len(trainX.T[i]),len(train_feature),len(trainy))
+        current_feature=metrics.mutual_info_score(train_feature,trainy)
         if current_feature>feature_score:
             feature_score=current_feature
             best_feature=i
         i=i+1
     #print(trainX.T[best_feature],trainy)
-    threshold=decision_stump(trainX.T[best_feature],trainy)
+    threshold=decision_stump(trainX.T[best_feature],trainy,step_size=0.1)
     #print(threshold)
     tree.data=[best_feature,threshold]
     left_tree=Tree()
@@ -74,14 +85,18 @@ def predict(testX,tree):
 
 def score(testX,testy,tree):
     right=0
+    py_set=[]
     for i in range(len(testX)):
         predict_y=predict(testX[i],tree)
+        py_set.append(predict_y)
         if predict_y==testy[i]:
             right=right+1
+    #print(py_set)
+    #print(testy)
     return round(right/len(testX),2)
 
 for n in example_num:
-    np.random.seed(10)
+    np.random.seed()
     indices=np.random.permutation(len(dataX))
     #train_num=n*2//3
     train_num=n
@@ -89,7 +104,11 @@ for n in example_num:
     trainy=datay[indices[:train_num]]
     testX=dataX[indices[train_num:]]
     testy=datay[indices[train_num:]]
-    tree=build_tree(trainX,trainy,depth=4)
+    tree=build_tree(trainX,trainy,depth=8)
     train_scores.append(score(trainX,trainy,tree))
     test_scores.append(score(testX,testy,tree))
 print(train_scores,test_scores)
+
+plt.plot(example_num,train_scores,linewidth=3,c='red')
+plt.plot(example_num,test_scores,linewidth=3,c='green')
+plt.show()

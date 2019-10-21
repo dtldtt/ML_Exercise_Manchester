@@ -5,10 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 cancer=datasets.load_breast_cancer()
-clf=tree.DecisionTreeClassifier(max_depth=10)
+clf=tree.DecisionTreeClassifier(max_depth=5)
 dataX=cancer.data
 datay=cancer.target
-example_num=[5,100,200,300,400,500]
+example_num=[50,200,400]
 train_scores=[]
 test_scores=[]
 

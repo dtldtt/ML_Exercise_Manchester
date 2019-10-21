@@ -1,17 +1,29 @@
 import numpy as np
 
-def model_function(X,stump):
-    if X>stump:
-        return 1
-    else:
+def model_function1(X,stump):
+    if X<stump:
         return 0
+    else:
+        return 1
+
+def model_function2(X,stump):
+    if X>stump:
+        return 0
+    else:
+        return 1
 
 def cal_error_rate(trainX,trainy,stump):
-    error_num=0
+    error_num1=0
+    error_num2=0
     for X,y in zip(trainX,trainy):
-        if model_function(X,stump)!=y:
-            error_num=error_num+1
-    return error_num/len(trainy)
+        if model_function1(X,stump)!=y:
+            error_num1=error_num1+1
+        if model_function2(X,stump)!=y:
+            error_num2=error_num2+1
+    if error_num1>error_num2:
+        return error_num2/len(trainy)
+    else:
+        return error_num1/len(trainy)
 
 def decision_stump(trainX,trainy,step_size=1,min_error=99999):
     max_X=np.max(trainX)
