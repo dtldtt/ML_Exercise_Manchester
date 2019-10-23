@@ -1,4 +1,4 @@
-import graphviz
+#import graphviz
 from sklearn import datasets
 from sklearn import tree
 import numpy as np

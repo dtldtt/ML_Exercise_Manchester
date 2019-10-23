@@ -11,14 +11,14 @@ warnings.filterwarnings("ignore")
 cancer=datasets.load_breast_cancer()
 dataX=cancer.data
 datay=cancer.target
-example_num=[50,200,300]
+example_num=[50,200,400]
 train_scores=[]
 test_scores=[]
 
 
 
 
-def build_tree(trainX,trainy,tree=Tree(),depth=10):
+def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,categorical_flag=0):
     if depth==0 or len(np.unique(trainy))==1:
         count0=list(trainy).count(0)
         count1=list(trainy).count(1)
@@ -29,25 +29,43 @@ def build_tree(trainX,trainy,tree=Tree(),depth=10):
     i=0
     feature_score=0
     best_feature=0
+
+    #flags=[1]*(trainX.shape[1])
     
     while i<(trainX.shape[1]):
+        if flags[i]==0:
+            i=i+1
+            continue
         train_feature=np.array([],dtype='int32')
         # try split the first feature
         #decision_stump(trainX.T[i],trainy)
-        feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.1)
+        #feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.2)
         # print(feature_stump)
+        feature_divides=np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')
+        if i==0:
+            #print(len(trainX.T[i]))
+            print(feature_divides)
         for eachX in trainX.T[i]:
-            if eachX<feature_stump:
-                train_feature=np.append(train_feature,0)
-            else:
+            if eachX<feature_divides[0]:
                 train_feature=np.append(train_feature,1)
+            elif eachX<feature_divides[1]:
+                train_feature=np.append(train_feature,2)
+            elif eachX<feature_divides[2]:
+                train_feature=np.append(train_feature,3)
+            else:
+                train_feature=np.append(train_feature,4)
         #print(len(trainX.T[i]),len(train_feature),len(trainy))
         current_feature=metrics.mutual_info_score(train_feature,trainy)
         if current_feature>feature_score:
             feature_score=current_feature
             best_feature=i
         i=i+1
+
+     
     #print(trainX.T[best_feature],trainy)
+    flags[best_feature]=0
+    #print(depth)
+    #print(flags)   
     threshold=decision_stump(trainX.T[best_feature],trainy,step_size=0.1)
     #print(threshold)
     tree.data=[best_feature,threshold]
@@ -66,10 +84,10 @@ def build_tree(trainX,trainy,tree=Tree(),depth=10):
         i=i+1
     #print(leftsub,rightsub)
     if len(leftsub)>0:
-        left_tree=build_tree(trainX[leftsub],trainy[leftsub],tree=left_tree,depth=depth-1)
+        left_tree=build_tree(trainX[leftsub],trainy[leftsub],flags,tree=left_tree,depth=depth-1)
         tree.left=left_tree
     if len(rightsub)>0:
-        right_tree=build_tree(trainX[rightsub],trainy[rightsub],tree=right_tree,depth=depth-1)
+        right_tree=build_tree(trainX[rightsub],trainy[rightsub],flags,tree=right_tree,depth=depth-1)
         tree.right=right_tree
     
     return tree
@@ -100,11 +118,16 @@ for n in example_num:
     indices=np.random.permutation(len(dataX))
     #train_num=n*2//3
     train_num=n
-    trainX=dataX[indices[:train_num]]
-    trainy=datay[indices[:train_num]]
-    testX=dataX[indices[train_num:]]
-    testy=datay[indices[train_num:]]
-    tree=build_tree(trainX,trainy,depth=8)
+    # trainX=dataX[indices[:train_num]]
+    # trainy=datay[indices[:train_num]]
+    # testX=dataX[indices[train_num:]]
+    # testy=datay[indices[train_num:]]
+    trainX=dataX[indices[:n]]
+    trainy=datay[indices[:n]]
+    testX=dataX[indices[n:]]
+    testy=datay[indices[n:]]
+    flags=[1]*(trainX.shape[1])
+    tree=build_tree(trainX,trainy,flags,depth=8)
     train_scores.append(score(trainX,trainy,tree))
     test_scores.append(score(testX,testy,tree))
 print(train_scores,test_scores)
