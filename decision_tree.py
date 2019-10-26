@@ -18,7 +18,7 @@ test_scores=[]
 
 
 
-def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,categorical_flag=0):
+def build_tree(trainX,trainy,flags,tree=Tree(),depth=10):
     if depth==0 or len(np.unique(trainy))==1:
         count0=list(trainy).count(0)
         count1=list(trainy).count(1)
@@ -42,9 +42,7 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,categorical_flag=0):
         #feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.2)
         # print(feature_stump)
         feature_divides=np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')
-        if i==0:
-            #print(len(trainX.T[i]))
-            print(feature_divides)
+    
         for eachX in trainX.T[i]:
             if eachX<feature_divides[0]:
                 train_feature=np.append(train_feature,1)
@@ -122,10 +120,10 @@ for n in example_num:
     # trainy=datay[indices[:train_num]]
     # testX=dataX[indices[train_num:]]
     # testy=datay[indices[train_num:]]
-    trainX=dataX[indices[:n]]
-    trainy=datay[indices[:n]]
-    testX=dataX[indices[n:]]
-    testy=datay[indices[n:]]
+    trainX=dataX[:n]
+    trainy=datay[:n]
+    testX=dataX[n:]
+    testy=datay[n:]
     flags=[1]*(trainX.shape[1])
     tree=build_tree(trainX,trainy,flags,depth=8)
     train_scores.append(score(trainX,trainy,tree))
