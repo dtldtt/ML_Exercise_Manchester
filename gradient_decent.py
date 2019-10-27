@@ -22,7 +22,7 @@ iris_y=iris.target
 #    if datay[i]==-1:
 #        datay[i]=0
 
-dataX,datay=make_classification(n_samples=500,n_features=4,n_redundant=0,n_informative=2,
+dataX,datay=make_classification(n_samples=1000,n_features=20,n_redundant=0,n_informative=2,
                              random_state=1,n_clusters_per_class=2)
 
 #trainX=dataX[:400]
