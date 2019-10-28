@@ -5,6 +5,7 @@ from sklearn import metrics
 from tree import Tree
 import warnings
 import matplotlib.pyplot as plt
+import copy
 
 warnings.filterwarnings("ignore")
 
@@ -53,6 +54,7 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
     
     feature_score=0
     best_feature=0
+    feature_split_point=0
 
     #flags=[1]*(trainX.shape[1])
     if RF==1:
@@ -65,27 +67,35 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
                 features.add(random_n)
         #print(features)
         for i in features:
-            train_feature=np.array([],dtype='int32')
+            #train_feature=np.array([],dtype='int32')
             # try split the first feature
             #decision_stump(trainX.T[i],trainy)
             #feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.2)
             # print(feature_stump)
-            feature_divides=np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')
-        
-            for eachX in trainX.T[i]:
-                if eachX<feature_divides[0]:
-                    train_feature=np.append(train_feature,1)
-                elif eachX<feature_divides[1]:
-                    train_feature=np.append(train_feature,2)
-                elif eachX<feature_divides[2]:
-                    train_feature=np.append(train_feature,3)
-                else:
-                    train_feature=np.append(train_feature,2)
+            #feature_divides=[np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')]
+            feature_divides=[]
+            
+            j=0
+            temp=list(copy.deepcopy(trainX.T[i]))
+            temp.sort()
+            while j<len(trainX.T[i])-1:              
+                feature_divides.append((temp[j]+temp[j+1])/2)
+                j+=1
+            for each_divide in feature_divides:
+                train_feature=np.array([],dtype='int32')
+                for eachX in trainX.T[i]:
+                    if eachX<=each_divide:
+                        train_feature=np.append(train_feature,0)
+                    else:
+                        train_feature=np.append(train_feature,1)
+                current_feature=metrics.mutual_info_score(train_feature,trainy)
+                if current_feature>feature_score:
+                    feature_score=current_feature
+                    best_feature=i
+                    feature_split_point=each_divide
             #print(len(trainX.T[i]),len(train_feature),len(trainy))
-            current_feature=metrics.mutual_info_score(train_feature,trainy)
-            if current_feature>feature_score:
-                feature_score=current_feature
-                best_feature=i
+                
+
         # K-=1
     else:
         i=0
@@ -98,29 +108,36 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
             #decision_stump(trainX.T[i],trainy)
             #feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.2)
             # print(feature_stump)
-            feature_divides=np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')
-        
-            for eachX in trainX.T[i]:
-                if eachX<feature_divides[0]:
-                    train_feature=np.append(train_feature,1)
-                elif eachX<feature_divides[1]:
-                    train_feature=np.append(train_feature,2)
-                elif eachX<feature_divides[2]:
-                    train_feature=np.append(train_feature,3)
-                else:
-                    train_feature=np.append(train_feature,2)
+            feature_divides=[]
+            
+            j=0
+            temp=list(copy.deepcopy(trainX.T[i]))
+            temp.sort()
+            while j<len(trainX.T[i])-1:              
+                feature_divides.append((temp[j]+temp[j+1])/2)
+                j+=1
+            for each_divide in feature_divides:
+                train_feature=np.array([],dtype='int32')
+                for eachX in trainX.T[i]:
+                    if eachX<=each_divide:
+                        train_feature=np.append(train_feature,0)
+                    else:
+                        train_feature=np.append(train_feature,1)
+                current_feature=metrics.mutual_info_score(train_feature,trainy)
+                if current_feature>feature_score:
+                    feature_score=current_feature
+                    best_feature=i
+                    feature_split_point=each_divide
             #print(len(trainX.T[i]),len(train_feature),len(trainy))
-            current_feature=metrics.mutual_info_score(train_feature,trainy)
-            if current_feature>feature_score:
-                feature_score=current_feature
-                best_feature=i
+                
             i=i+1
 
     #print(trainX.T[best_feature],trainy)
     flags[best_feature]=0
     #print(depth)
     #print(flags)   
-    threshold=decision_stump(trainX.T[best_feature],trainy,step_size=0.1)
+    #threshold=decision_stump(trainX.T[best_feature],trainy,step_size=0.1)
+    threshold=feature_split_point
     #print(threshold)
     tree.data=[best_feature,threshold]
     left_tree=Tree()

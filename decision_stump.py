@@ -30,12 +30,17 @@ def decision_stump(trainX,trainy,step_size=1,min_error=99999):
     min_X=np.min(trainX)
     x=min_X
     result=x
-    while x<max_X:
-        error_rate=cal_error_rate(trainX,trainy,x)
+    # while x<max_X:
+    #     error_rate=cal_error_rate(trainX,trainy,x)
+    #     if error_rate<min_error:
+    #         min_error=error_rate
+    #         result=x
+    #     x=x+step_size
+    for eachX in trainX:
+        error_rate=cal_error_rate(trainX,trainy,eachX)
         if error_rate<min_error:
             min_error=error_rate
-            result=x
-        x=x+step_size
+            result=eachX
     return result
 
 

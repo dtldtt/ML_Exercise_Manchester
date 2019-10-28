@@ -1,9 +1,11 @@
 import numpy as np
 import decision_tree 
-from decision_tree import build_tree,dataX,datay
+from decision_tree import build_tree
 import matplotlib.pyplot as plt
 from sklearn import metrics
 from tree import Tree
+from import_data import dataX,datay
+
 
 def bootstrap(trainX_num):
     i=0
@@ -53,24 +55,25 @@ def score(testX,testy,forest):
     return round(right/len(testX),2)
 
 
-example_num=[50,200,400]
+example_num=[1000]
 train_scores=[]
 test_scores=[]
 
 for n in example_num:
     np.random.seed()
     indices=np.random.permutation(len(dataX))
-    #train_num=n*2//3
+    
     train_num=n
-    # trainX=dataX[indices[:train_num]]
-    # trainy=datay[indices[:train_num]]
-    # testX=dataX[indices[train_num:]]
-    # testy=datay[indices[train_num:]]
-    trainX=dataX[:n]
-    trainy=datay[:n]
-    testX=dataX[n:]
-    testy=datay[n:]
-    forest=random_forest(trainX,trainy,35)
+    trainX=dataX[indices[:train_num]]
+    trainy=datay[indices[:train_num]]
+    testX=dataX[indices[train_num:1500]]
+    testy=datay[indices[train_num:1500]]
+    #trainX=dataX[:n]
+    #trainy=datay[:n]
+    #testX=dataX[n:500]
+    #testy=datay[n:500]
+    
+    forest=random_forest(trainX,trainy,5)
     train_scores.append(score(trainX,trainy,forest))
     test_scores.append(score(testX,testy,forest))
 print(train_scores,test_scores)
