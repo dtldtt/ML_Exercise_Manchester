@@ -57,7 +57,7 @@ def score(testX,testy,forest):
 
 
 example_num=[1500]
-trees=[17]
+trees=[5]
 train_scores=[]
 test_scores=[]
 

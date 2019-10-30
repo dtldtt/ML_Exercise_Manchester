@@ -59,11 +59,12 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
     #flags=[1]*(trainX.shape[1])
     if RF==1:
         features=set()
-        # print(flags)
+        print(flags)
         # print("depth:",depth)
         # print("Before 1 loop")
         while len(features)!=K:
             random_n=np.random.randint(0,trainX.shape[1])
+            print(random_n)
             if flags.count(1)<7:
                 print(random_n)
             if (random_n in features) or flags[random_n]==0:
@@ -72,10 +73,18 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
                 features.add(random_n)
         #print(features)
         #print("after 1 loop and before 2 loop")
+
+
+        # max_info_gain=0
+        # for i in features:
+        #     temp=metrics.mutual_info_score(trainX.T[i],trainy)
+        #     if temp>max_info_gain:
+        #         max_info_gain=temp
+        #         best_feature=i
+
+
         feature_info_gain=[]
         for i in features:
-            
-            
             feature_info_gain.append(metrics.mutual_info_score(trainX.T[i],trainy))
 
         mean=np.mean(feature_info_gain)
@@ -160,6 +169,8 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
     #print(flags)   
     #threshold=decision_stump(trainX.T[best_feature],trainy,step_size=0.1)
     threshold=feature_split_point
+    print("feature:",best_feature)
+    print("split point",threshold)
     #print(threshold)
     tree.data=[best_feature,threshold]
     left_tree=Tree()

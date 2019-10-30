@@ -1,12 +1,12 @@
 from sklearn.ensemble import RandomForestClassifier
 from import_data import dataX,datay
 
-trainX=dataX[:1000]
-trainy=datay[:1000]
-testX=dataX[1000:2000]
-testy=datay[1000:2000]
+trainX=dataX[:1500]
+trainy=datay[:1500]
+testX=dataX[1500:2000]
+testy=datay[1500:2000]
 test_score=[]
-num=[1,3,5,7,9,11,13]
+num=[5,9,13]
 
 
     
