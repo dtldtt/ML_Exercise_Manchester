@@ -1,0 +1,13 @@
+Introduction
+    1.Aim:
+    2.Motivation:
+    3.Approach
+
+Background:
+    introduce the development of decision tree, such as different types(id3,c4.5 etc.)
+    then introduce random forest and compare it to decison(advantages)
+    introduce several parameters we want to discuss and investigate
+
+
+conclusion:
+    without pruning

@@ -59,13 +59,19 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
     #flags=[1]*(trainX.shape[1])
     if RF==1:
         features=set()
+        # print(flags)
+        # print("depth:",depth)
+        # print("Before 1 loop")
         while len(features)!=K:
             random_n=np.random.randint(0,trainX.shape[1])
+            if flags.count(1)<7:
+                print(random_n)
             if (random_n in features) or flags[random_n]==0:
                 continue
             else:
                 features.add(random_n)
         #print(features)
+        #print("after 1 loop and before 2 loop")
         for i in features:
             #train_feature=np.array([],dtype='int32')
             # try split the first feature
@@ -78,23 +84,25 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
             j=0
             temp=list(copy.deepcopy(trainX.T[i]))
             temp.sort()
+            #print("before 2.1 loop")
             while j<len(trainX.T[i])-1:              
                 feature_divides.append((temp[j]+temp[j+1])/2)
                 j+=1
-            for each_divide in feature_divides:
-                train_feature=np.array([],dtype='int32')
-                for eachX in trainX.T[i]:
-                    if eachX<=each_divide:
-                        train_feature=np.append(train_feature,0)
-                    else:
-                        train_feature=np.append(train_feature,1)
+            #print("after 2.1 loop and before 2.2 loop")
+            
+            k=0
+            train_feature=np.full(len(trainX.T[i]),1,dtype=int)
+            while k<len(feature_divides):
+                
+                train_feature[k]=0
                 current_feature=metrics.mutual_info_score(train_feature,trainy)
                 if current_feature>feature_score:
                     feature_score=current_feature
                     best_feature=i
-                    feature_split_point=each_divide
+                    feature_split_point=feature_divides[k]
+                k+=1
             #print(len(trainX.T[i]),len(train_feature),len(trainy))
-                
+            #print("after 2.2 loop")
 
         # K-=1
     else:
@@ -146,6 +154,7 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
     rightsub=np.array([],dtype='int32')
     
     # split into 2 parts: leftsub and rightsub
+    #print("before split loop")
     i=0
     while i<(trainX.shape[0]):
         if trainX[i,best_feature]<=threshold:
@@ -160,7 +169,7 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
     if len(rightsub)>0:
         right_tree=build_tree(trainX[rightsub],trainy[rightsub],flags,tree=right_tree,depth=depth-1,RF=RF,K=K)
         tree.right=right_tree
-    
+    flags[best_feature]=1
     return tree
 
 
@@ -185,4 +194,10 @@ def score(testX,testy,tree):
     #print(testy)
     return round(right/len(testX),2)
 
-
+def intrinsic_value(X):
+    uniques=np.unique(X)
+    data=list(X)
+    result=0
+    for u in uniques:
+        result+=data.count(u)/len(X)+np.log2(data.count(u)/len(X))
+    return -result

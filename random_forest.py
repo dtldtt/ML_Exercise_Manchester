@@ -31,6 +31,7 @@ def random_forest(trainX,trainy,trees_num):
         subtree.left=temp_tree.left
         subtree.right=temp_tree.right
         forest.append(subtree)
+        print("第几棵树",i)
         i=i+1
     return forest
 
@@ -55,9 +56,11 @@ def score(testX,testy,forest):
     return round(right/len(testX),2)
 
 
-example_num=[1000]
+example_num=[1500]
+trees=[5,9,13,17,21]
 train_scores=[]
 test_scores=[]
+
 
 for n in example_num:
     np.random.seed()
@@ -66,19 +69,22 @@ for n in example_num:
     train_num=n
     trainX=dataX[indices[:train_num]]
     trainy=datay[indices[:train_num]]
-    testX=dataX[indices[train_num:1500]]
-    testy=datay[indices[train_num:1500]]
+    testX=dataX[indices[train_num:2000]]
+    testy=datay[indices[train_num:2000]]
     #trainX=dataX[:n]
     #trainy=datay[:n]
     #testX=dataX[n:500]
     #testy=datay[n:500]
     
-    forest=random_forest(trainX,trainy,5)
-    train_scores.append(score(trainX,trainy,forest))
-    test_scores.append(score(testX,testy,forest))
+    for num in trees:
+        forest=random_forest(trainX,trainy,num)
+        train_scores.append(score(trainX,trainy,forest))
+        test_scores.append(score(testX,testy,forest))
+    
+    
 print(train_scores,test_scores)
 
-plt.plot(example_num,train_scores,linewidth=3,c='red')
-plt.plot(example_num,test_scores,linewidth=3,c='green')
+plt.plot(trees,train_scores,linewidth=3,c='red')
+plt.plot(trees,test_scores,linewidth=3,c='green')
 plt.show()
 
