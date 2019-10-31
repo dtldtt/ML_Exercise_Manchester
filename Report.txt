@@ -8,6 +8,11 @@ Background:
     then introduce random forest and compare it to decison(advantages)
     introduce several parameters we want to discuss and investigate
 
+Experiments:
+1.feature split info gain and gain ratio
+1.K
+2.rf n trees
+
 
 conclusion:
     without pruning

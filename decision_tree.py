@@ -10,9 +10,7 @@ import copy
 warnings.filterwarnings("ignore")
 
 
-cancer=datasets.load_breast_cancer()
-dataX=cancer.data
-datay=cancer.target
+
 # example_num=[50,200,400]
 # train_scores=[]
 # test_scores=[]
@@ -43,7 +41,7 @@ datay=cancer.target
 
 
 
-def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
+def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0,gr=0):
     if depth==0 or len(np.unique(trainy))==1:
         count0=list(trainy).count(0)
         count1=list(trainy).count(1)
@@ -62,106 +60,103 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
         print(flags)
         # print("depth:",depth)
         # print("Before 1 loop")
-        while len(features)!=K:
-            random_n=np.random.randint(0,trainX.shape[1])
-            print(random_n)
-            if flags.count(1)<7:
-                print(random_n)
-            if (random_n in features) or flags[random_n]==0:
-                continue
-            else:
-                features.add(random_n)
+        if flags.count(1)>K:
+            while len(features)!=K:
+                random_n=np.random.randint(0,trainX.shape[1])
+                #print(random_n)
+                # if flags.count(1)<7:
+                #     print(random_n)
+                if (random_n in features) or flags[random_n]==0:
+                    continue
+                else:
+                    features.add(random_n)
+        else:
+            for i in flags:
+                if i==1:
+                    features.add(i)
         #print(features)
         #print("after 1 loop and before 2 loop")
+        print("K features",features)
 
+        if gr==0:
+            max_info_gain=0
+            for i in features:
+                temp=metrics.mutual_info_score(trainX.T[i],trainy)
+                if temp>max_info_gain:
+                    max_info_gain=temp
+                    best_feature=i
+        elif gr==1:
+            feature_info_gain=[]
+            for i in features:
+                feature_info_gain.append(metrics.mutual_info_score(trainX.T[i],trainy))
 
-        # max_info_gain=0
-        # for i in features:
-        #     temp=metrics.mutual_info_score(trainX.T[i],trainy)
-        #     if temp>max_info_gain:
-        #         max_info_gain=temp
-        #         best_feature=i
-
-
-        feature_info_gain=[]
-        for i in features:
-            feature_info_gain.append(metrics.mutual_info_score(trainX.T[i],trainy))
-
-        mean=np.mean(feature_info_gain)
-        good_features=[1]*len(feature_info_gain)
-        j=0
-        while j<len(feature_info_gain):
-            if feature_info_gain[j]<mean:
-                good_features[j]=0
-            j+=1
-        j=0
-        best_gain_ratio=0
-        while j<len(good_features):
-            if good_features[j]==1:
-                temp=gain_ratio(feature_info_gain[j],intrinsic_value(trainX.T[j]))
-                if temp>best_gain_ratio:
-                    best_feature=j
-                    best_gain_ratio=temp
-            j+=1
-
-        feature_divides=[]
-        split_score=0
-        j=0
-        temp=list(copy.deepcopy(trainX.T[best_feature]))
-        temp.sort()
-        #print("before 2.1 loop")
-        while j<len(trainX.T[best_feature])-1:              
-            feature_divides.append((temp[j]+temp[j+1])/2)
-            j+=1
-        #print("after 2.1 loop and before 2.2 loop")
-
-        k=0
-        train_feature=np.full(len(trainX.T[best_feature]),1,dtype=int)
-        while k<len(feature_divides):
-            
-            train_feature[k]=0
-            current_split=metrics.mutual_info_score(train_feature,trainy)
-            if current_split>split_score:
-                feature_split_point=feature_divides[k]
-            k+=1
-        #print(len(trainX.T[i]),len(train_feature),len(trainy))
-        #print("after 2.2 loop")
-
-    # K-=1
-    else:
-        i=0
-        while i<(trainX.shape[1]):
-            if flags[i]==0:
-                i=i+1
-                continue
-            train_feature=np.array([],dtype='int32')
-            # try split the first feature
-            #decision_stump(trainX.T[i],trainy)
-            #feature_stump=decision_stump(trainX.T[i],trainy,step_size=0.2)
-            # print(feature_stump)
-            feature_divides=[]
-            
+            mean=np.mean(feature_info_gain)
+            good_features=[1]*len(feature_info_gain)
             j=0
-            temp=list(copy.deepcopy(trainX.T[i]))
-            temp.sort()
-            while j<len(trainX.T[i])-1:              
-                feature_divides.append((temp[j]+temp[j+1])/2)
+            while j<len(feature_info_gain):
+                if feature_info_gain[j]<mean:
+                    good_features[j]=0
                 j+=1
-            for each_divide in feature_divides:
-                train_feature=np.array([],dtype='int32')
-                for eachX in trainX.T[i]:
-                    if eachX<=each_divide:
-                        train_feature=np.append(train_feature,0)
-                    else:
-                        train_feature=np.append(train_feature,1)
-                current_feature=metrics.mutual_info_score(train_feature,trainy)
+            j=0
+            best_gain_ratio=0
+            # for i in features:
+            #     temp=gain_ratio(metrics.mutual_info_score(trainX.T[i],trainy),intrinsic_value(trainX.T[i]))
+            #     if temp>best_gain_ratio:
+            #         best_gain_ratio=temp
+            #         best_feature=i
+            while j<len(good_features):
+                if good_features[j]==1:
+                    temp=gain_ratio(feature_info_gain[j],intrinsic_value(trainX.T[list(features)[j]]))
+                    if temp>best_gain_ratio:
+                        best_feature=list(features)[j]
+                        best_gain_ratio=temp
+                j+=1
+
+        else:
+            for i in features:
+                # feature_divides=np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')
+                # train_feature=np.array([],dtype='int32')
+                # for eachX in trainX.T[i]:
+                #     if eachX<feature_divides[0]:
+                #         train_feature=np.append(train_feature,1)
+                #     elif eachX<feature_divides[1]:
+                #         train_feature=np.append(train_feature,2)
+                #     elif eachX<feature_divides[2]:
+                #         train_feature=np.append(train_feature,3)
+                #     else:
+                #         train_feature=np.append(train_feature,4)
+                #print(len(trainX.T[i]),len(train_feature),len(trainy))
+                current_feature=metrics.mutual_info_score(trainX.T[i],trainy)
                 if current_feature>feature_score:
                     feature_score=current_feature
                     best_feature=i
-                    feature_split_point=each_divide
-            #print(len(trainX.T[i]),len(train_feature),len(trainy))
+                i=i+1
+            
+            feature_split_point=decision_stump(trainX.T[best_feature],trainy)
+        if gr==0 or gr==1:
+            feature_divides=[]
+            split_score=0
+            j=0
+            temp=list(copy.deepcopy(trainX.T[best_feature]))
+            temp.sort()
+            #print("before 2.1 loop")
+            while j<len(trainX.T[best_feature])-1:              
+                feature_divides.append((temp[j]+temp[j+1])/2)
+                j+=1
+            #print("after 2.1 loop and before 2.2 loop")
+
+            k=0
+            train_feature=np.full(len(trainX.T[best_feature]),1,dtype=int)
+            while k<len(feature_divides):
                 
-            i=i+1
+                train_feature[k]=0
+                current_split=metrics.mutual_info_score(train_feature,trainy)
+                if current_split>split_score:
+                    feature_split_point=feature_divides[k]
+                k+=1
+        #print(len(trainX.T[i]),len(train_feature),len(trainy))
+        #print("after 2.2 loop")
+    
 
     #print(trainX.T[best_feature],trainy)
     flags[best_feature]=0
@@ -189,10 +184,10 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0):
         i=i+1
     #print(leftsub,rightsub)
     if len(leftsub)>0:
-        left_tree=build_tree(trainX[leftsub],trainy[leftsub],flags,tree=left_tree,depth=depth-1,RF=RF,K=K)
+        left_tree=build_tree(trainX[leftsub],trainy[leftsub],flags,tree=left_tree,depth=depth-1,RF=RF,K=K,gr=gr)
         tree.left=left_tree
     if len(rightsub)>0:
-        right_tree=build_tree(trainX[rightsub],trainy[rightsub],flags,tree=right_tree,depth=depth-1,RF=RF,K=K)
+        right_tree=build_tree(trainX[rightsub],trainy[rightsub],flags,tree=right_tree,depth=depth-1,RF=RF,K=K,gr=gr)
         tree.right=right_tree
     flags[best_feature]=1
     return tree
