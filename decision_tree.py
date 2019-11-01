@@ -11,32 +11,6 @@ warnings.filterwarnings("ignore")
 
 
 
-# example_num=[50,200,400]
-# train_scores=[]
-# test_scores=[]
-
-# for n in example_num:
-#     np.random.seed()
-#     indices=np.random.permutation(len(dataX))
-#     #train_num=n*2//3
-#     train_num=n
-#     # trainX=dataX[indices[:train_num]]
-#     # trainy=datay[indices[:train_num]]
-#     # testX=dataX[indices[train_num:]]
-#     # testy=datay[indices[train_num:]]
-#     trainX=dataX[:n]
-#     trainy=datay[:n]
-#     testX=dataX[n:]
-#     testy=datay[n:]
-#     flags=[1]*(trainX.shape[1])
-#     tree=build_tree(trainX,trainy,flags,depth=8)
-#     train_scores.append(score(trainX,trainy,tree))
-#     test_scores.append(score(testX,testy,tree))
-# print(train_scores,test_scores)
-
-# plt.plot(example_num,train_scores,linewidth=3,c='red')
-# plt.plot(example_num,test_scores,linewidth=3,c='green')
-# plt.show()
 
 
 
@@ -86,46 +60,36 @@ def build_tree(trainX,trainy,flags,tree=Tree(),depth=10,RF=0,K=0,gr=0):
                     max_info_gain=temp
                     best_feature=i
         elif gr==1:
-            feature_info_gain=[]
-            for i in features:
-                feature_info_gain.append(metrics.mutual_info_score(trainX.T[i],trainy))
-
-            mean=np.mean(feature_info_gain)
-            good_features=[1]*len(feature_info_gain)
-            j=0
-            while j<len(feature_info_gain):
-                if feature_info_gain[j]<mean:
-                    good_features[j]=0
-                j+=1
-            j=0
-            best_gain_ratio=0
+            # feature_info_gain=[]
             # for i in features:
-            #     temp=gain_ratio(metrics.mutual_info_score(trainX.T[i],trainy),intrinsic_value(trainX.T[i]))
-            #     if temp>best_gain_ratio:
-            #         best_gain_ratio=temp
-            #         best_feature=i
-            while j<len(good_features):
-                if good_features[j]==1:
-                    temp=gain_ratio(feature_info_gain[j],intrinsic_value(trainX.T[list(features)[j]]))
-                    if temp>best_gain_ratio:
-                        best_feature=list(features)[j]
-                        best_gain_ratio=temp
-                j+=1
+            #     feature_info_gain.append(metrics.mutual_info_score(trainX.T[i],trainy))
+
+            # mean=np.mean(feature_info_gain)
+            # good_features=[1]*len(feature_info_gain)
+            # j=0
+            # while j<len(feature_info_gain):
+            #     if feature_info_gain[j]<mean:
+            #         good_features[j]=0
+            #     j+=1
+            # j=0
+            # best_gain_ratio=0
+            # while j<len(good_features):
+            #     if good_features[j]==1:
+            #         temp=gain_ratio(feature_info_gain[j],intrinsic_value(trainX.T[list(features)[j]]))
+            #         if temp>best_gain_ratio:
+            #             best_feature=list(features)[j]
+            #             best_gain_ratio=temp
+            #     j+=1
+            
+            best_gain_ratio=0
+            for i in features:
+                temp=gain_ratio(metrics.mutual_info_score(trainX.T[i],trainy),intrinsic_value(trainX.T[i]))
+                if temp>best_gain_ratio:
+                    best_gain_ratio=temp
+                    best_feature=i
 
         else:
             for i in features:
-                # feature_divides=np.percentile(trainX.T[i],(25,50,75),interpolation='midpoint')
-                # train_feature=np.array([],dtype='int32')
-                # for eachX in trainX.T[i]:
-                #     if eachX<feature_divides[0]:
-                #         train_feature=np.append(train_feature,1)
-                #     elif eachX<feature_divides[1]:
-                #         train_feature=np.append(train_feature,2)
-                #     elif eachX<feature_divides[2]:
-                #         train_feature=np.append(train_feature,3)
-                #     else:
-                #         train_feature=np.append(train_feature,4)
-                #print(len(trainX.T[i]),len(train_feature),len(trainy))
                 current_feature=metrics.mutual_info_score(trainX.T[i],trainy)
                 if current_feature>feature_score:
                     feature_score=current_feature
@@ -219,7 +183,7 @@ def intrinsic_value(X):
     data=list(X)
     result=0
     for u in uniques:
-        result+=data.count(u)/len(X)+np.log2(data.count(u)/len(X))
+        result+=(data.count(u)/len(X))*(np.log2(data.count(u)/len(X)))
     return -result
 
 def gain_ratio(info_gain,intrin_val):

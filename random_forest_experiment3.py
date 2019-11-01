@@ -28,7 +28,12 @@ def random_forest(trainX,trainy,trees_num,gr=0):
         K=round(np.log2(feature_num))
         
         subtree=Tree()
-        temp_tree=build_tree(trainX[trainset],trainy[trainset],flags,depth=10,RF=1,K=K,gr=gr)
+        d=0
+        if trainX.shape[1]>15:
+            d=15
+        else:
+            d=trainX.shape[1]
+        temp_tree=build_tree(trainX[trainset],trainy[trainset],flags,depth=d,RF=1,K=K,gr=gr)
         subtree.data=temp_tree.data
         subtree.left=temp_tree.left
         subtree.right=temp_tree.right
@@ -58,8 +63,8 @@ def score(testX,testy,forest):
     return round(right/len(testX),2)
 
 
-example_num=[50,200,500,750,950]
-trees=[3]
+example_num=[550]
+trees=[3,9,15,21,27,35,45,65]
 test_scores1=[]
 test_scores2=[]
 test_scores3=[]
@@ -76,7 +81,7 @@ test_scores3=[]
 for n in example_num:
 #for each in datasets:
     #n=len(each[0])
-    each=datasets[3]
+    each=datasets[2]
     dataX=each[0]
     datay=each[1]
     folds=3
@@ -117,14 +122,14 @@ for n in example_num:
     
 print(test_scores1,test_scores2,test_scores3)
 
-plt1=plt.plot(example_num,test_scores1,linewidth=3,c='red',label='info gain')
-plt2=plt.plot(example_num,test_scores2,linewidth=3,c='green',label='gain ratio')
-plt3=plt.plot(example_num,test_scores3,linewidth=3,c='blue',label='decision stump')
-plt.title('The relationship between the number training data and performance',fontsize=20)
-plt.xlabel('The number of training data',fontsize=23)
+plt1=plt.plot(trees,test_scores1,linewidth=3,c='red',label='info gain')
+plt2=plt.plot(trees,test_scores2,linewidth=3,c='green',label='gain ratio')
+plt3=plt.plot(trees,test_scores3,linewidth=3,c='blue',label='decision stump')
+plt.title('The relationship between the number trees in forest and performance',fontsize=20)
+plt.xlabel('The number of trees',fontsize=23)
 plt.ylabel('Predictive accuracy',fontsize=23)
 plt.legend(loc='best',fontsize=20)# make legend
-#plt.xlim(0,6)
+plt.xlim(0,40)
 plt.ylim(0.4,1)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
