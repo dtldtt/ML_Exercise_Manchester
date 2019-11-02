@@ -34,7 +34,6 @@ def random_forest(trainX,trainy,trees_num,gr=0):
         subtree.left=temp_tree.left
         subtree.right=temp_tree.right
         forest.append(subtree)
-        print("第几棵树",i)
         i=i+1
     return forest
 
@@ -60,7 +59,7 @@ def score(testX,testy,forest):
 
 
 example_num=[800]
-trees=[3,5,9,15,21,27,35,45]
+trees=[3,5,9,15,21,27,35,45,65]
 test_scores1=[]
 test_scores2=[]
 test_scores3=[]

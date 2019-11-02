@@ -25,16 +25,19 @@ def random_forest(trainX,trainy,trees_num,gr=0):
         #print(trainset)
         feature_num=trainX.shape[1]
         flags=[1]*feature_num
-        K=round(np.log2(feature_num))
+        K=round(np.log2(feature_num))+1
         
         subtree=Tree()
-        
+        # d=0
+        # if trainX.shape[1]>15:
+        #     d=15
+        # else:
+        #     d=trainX.shape[1]
         temp_tree=build_tree(trainX[trainset],trainy[trainset],flags,depth=trainX.shape[1],RF=1,K=K,gr=gr)
         subtree.data=temp_tree.data
         subtree.left=temp_tree.left
         subtree.right=temp_tree.right
         forest.append(subtree)
-        print("第几棵树",i)
         i=i+1
     return forest
 
@@ -51,16 +54,42 @@ def predict(testX,forest):
         return 1
 
 def score(testX,testy,forest):
+    # right=0
+    # for i in range(len(testX)):
+    #     result=predict(testX[i],forest)
+    #     if result==testy[i]:
+    #         right+=1
+    # return round(right/len(testX),2)
     right=0
+    TP=0
+    FP=0
+    P=0
     for i in range(len(testX)):
         result=predict(testX[i],forest)
-        if result==testy[i]:
-            right+=1
-    return round(right/len(testX),2)
+        print("result  :  label\n\n\n",result,testy[i])
+        if testy[i]==1:
+            P+=1
+            if result==1:
+                TP+=1
+            else:
+                FP+=1
+        
+        # if result==testy[i]:
+        #     right+=1
+    if TP==0:
+        print("testX",testX[i])
+        print("testy",testy[i])
+        print("test shape",testX.shape)
+        print("TP FP",TP,FP)
+        print("0",list(testy).count(0))
+        print("1",list(testy).count(1))
+    precision=TP/(TP+FP)
+    recall=TP/P
+    print("first test is over\n\n")
+    return round(2/(1/precision+1/recall),2)
 
 
-example_num=[800]
-trees=[3,5,9,15,21,27,35,45]
+trees=[7]
 test_scores1=[]
 test_scores2=[]
 test_scores3=[]
@@ -74,10 +103,10 @@ test_scores3=[]
 # forest=random_forest(trainX,trainy,5,gr=2)
 # test1=score(testX,testy,forest)
 # print(test1)
-for n in example_num:
-#for each in datasets:
-    #n=len(each[0])
-    each=datasets[0]
+# for n in example_num:
+
+for each in datasets:
+    n=len(each[0])
     dataX=each[0]
     datay=each[1]
     folds=3
@@ -118,14 +147,14 @@ for n in example_num:
     
 print(test_scores1,test_scores2,test_scores3)
 
-plt1=plt.plot(trees,test_scores1,linewidth=3,c='red',label='info gain')
-plt2=plt.plot(trees,test_scores2,linewidth=3,c='green',label='gain ratio')
-plt3=plt.plot(trees,test_scores3,linewidth=3,c='blue',label='decision stump')
-plt.title('The relationship between the number trees in forest and performance',fontsize=20)
-plt.xlabel('The number of trees',fontsize=23)
+plt1=plt.plot(list(range(5))[1:],test_scores1,linewidth=3,c='red',label='info gain')
+plt2=plt.plot(list(range(5))[1:],test_scores2,linewidth=3,c='green',label='gain ratio')
+plt3=plt.plot(list(range(5))[1:],test_scores3,linewidth=3,c='blue',label='decision stump')
+plt.title('The relationship between different datasets and performance with 3 split methods',fontsize=20)
+plt.xlabel('Datasets ID',fontsize=23)
 plt.ylabel('Predictive accuracy',fontsize=23)
 plt.legend(loc='best',fontsize=20)# make legend
-#plt.xlim(0,40)
+plt.xlim(0,5)
 plt.ylim(0.4,1)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
